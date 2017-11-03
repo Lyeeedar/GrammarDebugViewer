@@ -11,6 +11,7 @@ namespace GrammarDebugViewer
 {
 	public class DebugFrame
 	{
+		public DebugFrame Parent;
 		public static IntPoint GridSize;
 
 		public string Name { get; set; }
@@ -70,11 +71,16 @@ namespace GrammarDebugViewer
 			{
 				foreach (var childEl in childrenEl.Elements())
 				{
-					var child = new DebugFrame();
+					var child = new DebugFrame(this);
 					child.Parse(childEl, entityTable);
 					Children.Add(child);
 				}
 			}
+		}
+
+		public DebugFrame(DebugFrame parent)
+		{
+			Parent = parent;
 		}
 	}
 

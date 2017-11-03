@@ -27,12 +27,36 @@ namespace GrammarDebugViewer.View
 		public int PixelsATile { get; set; } = 10;
 
 		//-----------------------------------------------------------------------
-		protected Brush ActiveBrush { get { return m_activeBrush; } }
-		private Brush m_activeBrush = new SolidColorBrush("50,50,65".ToColour().Value);
+		protected Brush ActiveBrush
+		{
+			get
+			{
+				if (m_activeBrush == null)
+				{
+					m_activeBrush = new SolidColorBrush("50,50,65".ToColour().Value);
+					m_activeBrush.Freeze();
+				}
+
+				return m_activeBrush;
+			}
+		}
+		private Brush m_activeBrush;
 
 		//-----------------------------------------------------------------------
-		protected Brush InactiveBrush { get { return m_inActiveBrush; } }
-		private Brush m_inActiveBrush = new SolidColorBrush("30,30,30".ToColour().Value);
+		protected Brush InactiveBrush
+		{
+			get
+			{
+				if (m_inActiveBrush == null)
+				{
+					m_inActiveBrush = new SolidColorBrush("30,30,30".ToColour().Value);
+					m_inActiveBrush.Freeze();
+				}
+
+				return m_inActiveBrush;
+			}
+		}
+		private Brush m_inActiveBrush;
 
 		//-----------------------------------------------------------------------
 		protected Brush BackgroundBrush { get { return (Application.Current.TryFindResource("WindowBackgroundBrush") as SolidColorBrush); } }
@@ -85,7 +109,7 @@ namespace GrammarDebugViewer.View
 				if (SelectedPoint != null)
 				{
 					var x = SelectedPoint.Value.X + ZeroPoint.X;
-					var y = SelectedPoint.Value.Y + ZeroPoint.Y;
+					var y = (DebugFrame.GridSize.Y - 1) - (SelectedPoint.Value.Y + ZeroPoint.Y);
 
 					if (x > 0 && x < GridWidth && y > 0 && y < GridHeight)
 					{
@@ -114,6 +138,9 @@ namespace GrammarDebugViewer.View
 
 		//-----------------------------------------------------------------------
 		private GlyphRunBuilder GlyphRunBuilder;
+
+		//-----------------------------------------------------------------------
+		private DebugFrame DebugFrame { get { return DataContext as DebugFrame; } }
 
 		//-----------------------------------------------------------------------
 		public AsciiGrid()
@@ -156,11 +183,11 @@ namespace GrammarDebugViewer.View
 		//-----------------------------------------------------------------------
 		private void DatacontextChanged()
 		{
-			var frame = DataContext as DebugFrame;
+			var frame = DebugFrame;
 			if (frame == null) return;
 
-			ZeroPoint = frame.Offset;
 			Grid = frame.Grid;
+			ZeroPoint = new IntPoint(-frame.Offset.X, -frame.Offset.Y);
 
 			if (ActualWidth == 0 || double.IsNaN(ActualWidth) || ActualHeight == 0 || double.IsNaN(ActualHeight))
 			{
@@ -236,7 +263,7 @@ namespace GrammarDebugViewer.View
 						drawingContext.DrawRectangle(ActiveBrush, null,
 							new System.Windows.Rect(
 								-ViewPos.X + x * PixelsATile - (ZeroPoint.X * PixelsATile),
-								-ViewPos.Y + y * PixelsATile - (ZeroPoint.Y * PixelsATile),
+								-ViewPos.Y + (((DebugFrame.GridSize.Y - 1) * PixelsATile) - (y * PixelsATile - (ZeroPoint.Y * PixelsATile))),
 								PixelsATile,
 								PixelsATile));
 					}
@@ -297,15 +324,37 @@ namespace GrammarDebugViewer.View
 				drawingContext.DrawRectangle(selectionBackBrush, null, new Rect(x, y, PixelsATile, PixelsATile));
 			}
 
-			GlyphRunBuilder.StartRun(PixelsATile, -ViewPos.X - ZeroPoint.X * PixelsATile + PixelsATile / 4, -ViewPos.Y - ZeroPoint.Y * PixelsATile - PixelsATile / 5);
+			GlyphRunBuilder.StartRun(PixelsATile, -ViewPos.X + PixelsATile / 4, -ViewPos.Y - PixelsATile / 5);
 
 			// draw characters
+			usedTiles.Clear();
 			for (int x = 0; x < GridWidth; x++)
 			{
 				for (int y = 0; y < GridHeight; y++)
 				{
-					GlyphRunBuilder.AddGlyph(x + ZeroPoint.X, y + ZeroPoint.Y, Grid[x, y].Char);
+					var drawPos = new IntPoint(x - ZeroPoint.X, (DebugFrame.GridSize.Y - 1) - (y - ZeroPoint.Y));
+					usedTiles.Add(drawPos.FastHash);
+					GlyphRunBuilder.AddGlyph(drawPos.X, drawPos.Y, Grid[x, y].Char);
 				}
+			}
+			var current = DebugFrame.Parent;
+			while (current != null)
+			{
+				for (int x = 0; x < current.Grid.GetLength(0); x++)
+				{
+					for (int y = 0; y < current.Grid.GetLength(1); y++)
+					{
+						var drawPos = new IntPoint(x + current.Offset.X, (DebugFrame.GridSize.Y - 1) - (y + current.Offset.Y));
+
+						if (!usedTiles.Contains(drawPos.FastHash))
+						{
+							usedTiles.Add(drawPos.FastHash);
+							GlyphRunBuilder.AddGlyph(drawPos.X, drawPos.Y, current.Grid[x, y].Char);
+						}
+					}
+				}
+
+				current = current.Parent;
 			}
 
 			if (GlyphRunBuilder.HasGlyphs())
@@ -323,7 +372,7 @@ namespace GrammarDebugViewer.View
 			var local = new Point((pos.X + ViewPos.X) / PixelsATile, (pos.Y + ViewPos.Y) / PixelsATile);
 
 			PixelsATile += (e.Delta / 120) * (int)Math.Ceiling((double)PixelsATile / 10.0);
-			if (PixelsATile < 5) PixelsATile = 5;
+			if (PixelsATile < 2) PixelsATile = 2;
 
 			ViewPos = new Point(local.X * PixelsATile - pos.X, local.Y * PixelsATile - pos.Y);
 

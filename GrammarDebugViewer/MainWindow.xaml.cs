@@ -58,7 +58,7 @@ namespace GrammarDebugViewer
 					{
 						if (frameEl.Name == "EntityTable") continue;
 
-						var frame = new DebugFrame();
+						var frame = new DebugFrame(null);
 						frame.Parse(frameEl, entityTable);
 
 						frames.Add(frame);
@@ -67,6 +67,7 @@ namespace GrammarDebugViewer
 					DebugFrame.GridSize = new IntPoint(frames[0].Grid.GetLength(0), frames[0].Grid.GetLength(1));
 
 					RootFrames.BeginChange();
+					RootFrames.Clear();
 					foreach (var frame in frames)
 					{
 						RootFrames.Add(frame);
