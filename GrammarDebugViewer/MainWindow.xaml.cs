@@ -49,17 +49,25 @@ namespace GrammarDebugViewer
 					var entityTableEl = doc.Root.Element("EntityTable");
 					foreach (var el in entityTableEl.Elements())
 					{
-						var index = int.Parse(el.Name.ToString().Remove(0, 1));
+						var index = int.Parse(el.Name.ToString().Substring(1));
 						entityTable[index] = el.Elements().FirstOrDefault();
+					}
+
+					var colourTable = new Dictionary<int, string>();
+					var colourTableEl = doc.Root.Element("ColourTable");
+					foreach (var el in colourTableEl.Elements())
+					{
+						var index = int.Parse(el.Name.ToString().Substring(1));
+						colourTable[index] = el.Value;
 					}
 
 					var frames = new List<DebugFrame>();
 					foreach (var frameEl in doc.Root.Elements())
 					{
-						if (frameEl.Name == "EntityTable") continue;
+						if (frameEl.Name == "EntityTable" || frameEl.Name == "ColourTable") continue;
 
 						var frame = new DebugFrame(null);
-						frame.Parse(frameEl, entityTable);
+						frame.Parse(frameEl, entityTable, colourTable);
 
 						frames.Add(frame);
 					}

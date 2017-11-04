@@ -6,6 +6,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:local="clr-namespace:GrammarDebugViewer"
 	xmlns:v="clr-namespace:GrammarDebugViewer.View"
+	Icon="pack://application:,,,/GrammarDebugViewer;component/Resources/Icon.png"
 	Title="Grammar Debug Viewer"
 	WindowState="Maximized">
 	<Grid>

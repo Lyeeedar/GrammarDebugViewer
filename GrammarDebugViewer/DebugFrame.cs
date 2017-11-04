@@ -20,7 +20,7 @@ namespace GrammarDebugViewer
 
 		public List<DebugFrame> Children { get; } = new List<DebugFrame>();
 
-		public void Parse(XElement el, Dictionary<int, XElement> entityTable)
+		public void Parse(XElement el, Dictionary<int, XElement> entityTable, Dictionary<int, string> colourTable)
 		{
 			Name = el.Attribute("N").Value;
 
@@ -40,12 +40,20 @@ namespace GrammarDebugViewer
 				int x = 0;
 				foreach (var tileEl in line.Elements())
 				{
-					var active = tileEl.Element("A") != null ? true : false;
+					var colour = "30,30,30";
+
+					var colIndex = tileEl.Element("A")?.Value;
+					if (colIndex != null)
+					{
+						var index = int.Parse(colIndex);
+						colour = colourTable[index];
+					}
+
 					var charStr = tileEl.Element("C").Value.Trim();
 					var c = charStr.FirstOrDefault();
 					if (c == '\0') c = ' ';
 
-					Grid[x, y] = new DebugTile(active, c);
+					Grid[x, y] = new DebugTile(colour, c);
 
 					var contentsEl = tileEl.Element("N");
 					foreach (var slotEl in contentsEl.Elements())
@@ -72,7 +80,7 @@ namespace GrammarDebugViewer
 				foreach (var childEl in childrenEl.Elements())
 				{
 					var child = new DebugFrame(this);
-					child.Parse(childEl, entityTable);
+					child.Parse(childEl, entityTable, colourTable);
 					Children.Add(child);
 				}
 			}
@@ -117,14 +125,14 @@ namespace GrammarDebugViewer
 		}
 		private static SpaceSlot[] s_slots;
 
-		public bool Active { get; set; }
+		public string Colour { get; set; }
 		public char Char { get; set; }
 
 		public Dictionary<SpaceSlot, XElement> Contents { get; } = new Dictionary<SpaceSlot, XElement>();
 
-		public DebugTile(bool active, char c)
+		public DebugTile(string colour, char c)
 		{
-			Active = active;
+			Colour = colour;
 			Char = c;
 		}
 	}

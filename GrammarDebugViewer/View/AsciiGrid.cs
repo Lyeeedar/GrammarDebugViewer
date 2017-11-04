@@ -27,20 +27,19 @@ namespace GrammarDebugViewer.View
 		public int PixelsATile { get; set; } = 10;
 
 		//-----------------------------------------------------------------------
-		protected Brush ActiveBrush
+		public Dictionary<string, Brush> Brushes = new Dictionary<string, Brush>();
+		private Brush GetBrush(string col)
 		{
-			get
+			Brush brush;
+			if (!Brushes.TryGetValue(col, out brush))
 			{
-				if (m_activeBrush == null)
-				{
-					m_activeBrush = new SolidColorBrush("50,50,65".ToColour().Value);
-					m_activeBrush.Freeze();
-				}
-
-				return m_activeBrush;
+				brush = new SolidColorBrush(col.ToColour().Value);
+				brush.Freeze();
+				Brushes[col] = brush;
 			}
+
+			return brush;
 		}
-		private Brush m_activeBrush;
 
 		//-----------------------------------------------------------------------
 		protected Brush InactiveBrush
@@ -258,9 +257,10 @@ namespace GrammarDebugViewer.View
 			{
 				for (int y = 0; y < GridHeight; y++)
 				{
-					if (Grid[x, y].Active)
+					var tile = Grid[x, y];
+					if (!string.IsNullOrWhiteSpace(tile.Colour))
 					{
-						drawingContext.DrawRectangle(ActiveBrush, null,
+						drawingContext.DrawRectangle(GetBrush(tile.Colour), null,
 							new System.Windows.Rect(
 								-ViewPos.X + x * PixelsATile - (ZeroPoint.X * PixelsATile),
 								-ViewPos.Y + (((DebugFrame.GridSize.Y - 1) * PixelsATile) - (y * PixelsATile - (ZeroPoint.Y * PixelsATile))),
