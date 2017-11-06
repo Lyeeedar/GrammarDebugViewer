@@ -9,7 +9,7 @@ using System.Xml.Linq;
 
 namespace GrammarDebugViewer
 {
-	public class DebugFrame
+	public class DebugFrame : NotifyPropertyChanged
 	{
 		public DebugFrame Parent;
 		public static IntPoint GridSize;
@@ -19,6 +19,26 @@ namespace GrammarDebugViewer
 		public DebugTile[,] Grid { get; set; }
 
 		public List<DebugFrame> Children { get; } = new List<DebugFrame>();
+
+		public bool IsExpanded
+		{
+			get { return m_isExpanded; }
+			set
+			{
+				m_isExpanded = value;
+				RaisePropertyChangedEvent();
+			}
+		}
+		private bool m_isExpanded;
+
+		public void ExpandAll()
+		{
+			IsExpanded = true;
+			foreach (var child in Children)
+			{
+				child.ExpandAll();
+			}
+		}
 
 		public void Parse(XElement el, Dictionary<int, XElement> entityTable, Dictionary<int, string> colourTable)
 		{

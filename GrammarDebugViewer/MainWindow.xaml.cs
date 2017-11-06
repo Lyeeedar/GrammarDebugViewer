@@ -88,5 +88,11 @@ namespace GrammarDebugViewer
 				}
 			}
 		}
+
+		private void ExpandAllClick(object sender, RoutedEventArgs e)
+		{
+			var item = (sender as FrameworkElement).DataContext as DebugFrame;
+			item.ExpandAll();
+		}
 	}
 }

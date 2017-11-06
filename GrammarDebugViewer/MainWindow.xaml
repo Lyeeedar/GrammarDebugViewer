@@ -39,7 +39,7 @@
 				<ColumnDefinition
 					Width="*" />
 			</Grid.ColumnDefinitions>
-			
+
 			<TreeView
 				x:Name="treeView"
 				ItemsSource="{Binding RootFrames}"
@@ -47,10 +47,28 @@
 				<TreeView.ItemTemplate>
 					<HierarchicalDataTemplate
 						ItemsSource="{Binding Path=Children}">
-						<TextBlock
-							Text="{Binding Name}" />
+						<Grid>
+							<Grid.ContextMenu>
+								<ContextMenu>
+									<MenuItem
+										Header="Expand All"
+										Click="ExpandAllClick" />
+								</ContextMenu>
+							</Grid.ContextMenu>
+							<TextBlock
+								Text="{Binding Name}" />
+						</Grid>
 					</HierarchicalDataTemplate>
 				</TreeView.ItemTemplate>
+				<TreeView.ItemContainerStyle>
+					<Style
+						BasedOn="{StaticResource {x:Type TreeViewItem}}"
+						TargetType="{x:Type TreeViewItem}">
+						<Setter
+							Property="IsExpanded"
+							Value="{Binding IsExpanded, Mode=TwoWay}" />
+					</Style>
+				</TreeView.ItemContainerStyle>
 			</TreeView>
 
 			<GridSplitter
@@ -89,11 +107,11 @@
 						</ItemsControl>
 					</ScrollViewer>
 				</Grid>
-				
+
 			</Grid>
 
 		</Grid>
 
-		
+
 	</Grid>
 </Window>
