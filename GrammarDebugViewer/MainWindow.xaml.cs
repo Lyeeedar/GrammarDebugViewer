@@ -3,6 +3,7 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,7 +44,12 @@ namespace GrammarDebugViewer
 
 				try
 				{
-					XDocument doc = XDocument.Load(chosen);
+					XDocument doc = null;
+					using (Stream file = File.OpenRead(chosen))
+					using (GZipStream stream = new GZipStream(file, CompressionMode.Decompress))
+					{
+						doc = XDocument.Load(stream);
+					}
 
 					var entityTable = new Dictionary<int, XElement>();
 					var entityTableEl = doc.Root.Element("EntityTable");

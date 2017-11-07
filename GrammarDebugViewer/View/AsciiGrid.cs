@@ -108,9 +108,9 @@ namespace GrammarDebugViewer.View
 				if (SelectedPoint != null)
 				{
 					var x = SelectedPoint.Value.X + ZeroPoint.X;
-					var y = (DebugFrame.GridSize.Y - 1) - (SelectedPoint.Value.Y + ZeroPoint.Y);
+					var y = (DebugFrame.GridSize.Y - 1 + ZeroPoint.Y) - SelectedPoint.Value.Y;
 
-					if (x > 0 && x < GridWidth && y > 0 && y < GridHeight)
+					if (x >= 0 && x < GridWidth && y >= 0 && y < GridHeight)
 					{
 						return Grid[x, y];
 					}
