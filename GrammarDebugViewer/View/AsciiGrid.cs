@@ -253,26 +253,28 @@ namespace GrammarDebugViewer.View
 								DebugFrame.GridSize.X * PixelsATile,
 								DebugFrame.GridSize.Y * PixelsATile));
 
+			// draw grid lines
+			var startX = (Math.Floor(ViewPos.X / PixelsATile) * PixelsATile) - ViewPos.X;
+			var startY = (Math.Floor(ViewPos.Y / PixelsATile) * PixelsATile) - ViewPos.Y;
+
 			for (int x = 0; x < GridWidth; x++)
 			{
+				var drawX = -ViewPos.X + x * PixelsATile - (ZeroPoint.X * PixelsATile);
+				if (drawX > ActualWidth || drawX + PixelsATile < 0) { continue; }
+
 				for (int y = 0; y < GridHeight; y++)
 				{
 					var tile = Grid[x, y];
 					if (!string.IsNullOrWhiteSpace(tile.Colour))
 					{
+						var drawY = -ViewPos.Y + (((DebugFrame.GridSize.Y - 1) * PixelsATile) - (y * PixelsATile - (ZeroPoint.Y * PixelsATile)));
+						if (drawY > ActualHeight || drawY + PixelsATile < 0) { continue; }
+
 						drawingContext.DrawRectangle(GetBrush(tile.Colour), null,
-							new System.Windows.Rect(
-								-ViewPos.X + x * PixelsATile - (ZeroPoint.X * PixelsATile),
-								-ViewPos.Y + (((DebugFrame.GridSize.Y - 1) * PixelsATile) - (y * PixelsATile - (ZeroPoint.Y * PixelsATile))),
-								PixelsATile,
-								PixelsATile));
+							new System.Windows.Rect(drawX, drawY, PixelsATile, PixelsATile));
 					}
 				}
 			}
-
-			// draw grid lines
-			var startX = (Math.Floor(ViewPos.X / PixelsATile) * PixelsATile) - ViewPos.X;
-			var startY = (Math.Floor(ViewPos.Y / PixelsATile) * PixelsATile) - ViewPos.Y;
 
 			for (double x = startX; x < ActualWidth; x += PixelsATile)
 			{
@@ -328,22 +330,40 @@ namespace GrammarDebugViewer.View
 
 			// draw characters
 			usedTiles.Clear();
+
+			// draw characters
 			for (int x = 0; x < GridWidth; x++)
 			{
+				var drawX = -ViewPos.X + x * PixelsATile - (ZeroPoint.X * PixelsATile);
+				if (drawX > ActualWidth || drawX + PixelsATile < 0) { continue; }
+
 				for (int y = 0; y < GridHeight; y++)
 				{
+					var drawY = -ViewPos.Y + (((DebugFrame.GridSize.Y - 1) * PixelsATile) - (y * PixelsATile - (ZeroPoint.Y * PixelsATile)));
+					if (drawY > ActualHeight || drawY + PixelsATile < 0) { continue; }
+
 					var drawPos = new IntPoint(x - ZeroPoint.X, (DebugFrame.GridSize.Y - 1) - (y - ZeroPoint.Y));
+
+					var trueDrawPos = new Point(drawPos.X * PixelsATile - ViewPos.X, drawPos.Y * PixelsATile - ViewPos.Y);
+
 					usedTiles.Add(drawPos.FastHash);
 					GlyphRunBuilder.AddGlyph(drawPos.X, drawPos.Y, Grid[x, y].Char);
 				}
 			}
+
 			var current = DebugFrame.Parent;
 			while (current != null)
 			{
 				for (int x = 0; x < current.Grid.GetLength(0); x++)
 				{
+					var drawX = -ViewPos.X + x * PixelsATile - (current.Offset.X * PixelsATile);
+					if (drawX > ActualWidth || drawX + PixelsATile < 0) { continue; }
+
 					for (int y = 0; y < current.Grid.GetLength(1); y++)
 					{
+						var drawY = -ViewPos.Y + (((DebugFrame.GridSize.Y - 1) * PixelsATile) - (y * PixelsATile + (current.Offset.Y * PixelsATile)));
+						if (drawY > ActualHeight || drawY + PixelsATile < 0) { continue; }
+
 						var drawPos = new IntPoint(x + current.Offset.X, (DebugFrame.GridSize.Y - 1) - (y + current.Offset.Y));
 
 						if (!usedTiles.Contains(drawPos.FastHash))
